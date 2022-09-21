@@ -69,6 +69,11 @@ func (logger *Logger) SkipFramesOnce(frames int) *Logger {
 	return logger
 }
 
+func (logger *Logger) SkipFrames(frames int) *Logger {
+	logger.skipFrames += frames
+	return logger
+}
+
 // Debug uses the fmt.Sprint to construct and log a message.
 func (logger *Logger) Debug(args ...interface{}) {
 	if logger.level <= zapcore.DebugLevel {
