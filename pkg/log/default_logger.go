@@ -19,6 +19,10 @@ func init() {
 	DefaultLogger = l
 }
 
+func SkipFramesOnce(frames int) *Logger {
+	return DefaultLogger.SkipFramesOnce(frames)
+}
+
 // Debug uses the fmt.Sprint to construct and log a message using the DefaultLogger.
 func Debug(args ...interface{}) {
 	DefaultLogger.Debug(args...)

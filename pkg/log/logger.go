@@ -29,6 +29,8 @@ type Logger struct {
 	level      zapcore.Level
 	skipFrames int
 	context    string
+
+	skipFramesOnce int
 }
 
 func (logger *Logger) write(level zapcore.Level, message string, fields []zapcore.Field) {
@@ -37,9 +39,10 @@ func (logger *Logger) write(level zapcore.Level, message string, fields []zapcor
 		Time:       time.Now(),
 		Message:    message,
 		LoggerName: logger.context,
-		Caller:     zapcore.NewEntryCaller(runtime.Caller(logger.skipFrames)),
+		Caller:     zapcore.NewEntryCaller(runtime.Caller(logger.skipFrames + logger.skipFramesOnce)),
 	}
 
+	logger.skipFramesOnce = 0
 	_ = logger.core.Write(e, fields)
 }
 
@@ -59,6 +62,11 @@ func (logger *Logger) Close() (err error) {
 		return closer.Close()
 	}
 	return nil
+}
+
+func (logger *Logger) SkipFramesOnce(frames int) *Logger {
+	logger.skipFramesOnce += frames
+	return logger
 }
 
 // Debug uses the fmt.Sprint to construct and log a message.
