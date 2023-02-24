@@ -282,7 +282,7 @@ func NewLogger(opts ...Option) (*Logger, error) {
 			StacktraceKey:  "backtrace",
 			LineEnding:     zapcore.DefaultLineEnding,
 			EncodeLevel:    zapcore.LowercaseColorLevelEncoder,
-			EncodeTime:     zapcore.RFC3339TimeEncoder,
+			EncodeTime:     getTimeEncoder(o, zapcore.RFC3339TimeEncoder),
 			EncodeDuration: zapcore.StringDurationEncoder,
 			EncodeCaller:   zapcore.ShortCallerEncoder,
 		})
@@ -296,7 +296,7 @@ func NewLogger(opts ...Option) (*Logger, error) {
 			StacktraceKey:  "backtrace",
 			LineEnding:     zapcore.DefaultLineEnding,
 			EncodeLevel:    zapcore.LowercaseLevelEncoder,
-			EncodeTime:     zapcore.RFC3339NanoTimeEncoder,
+			EncodeTime:     getTimeEncoder(o, zapcore.RFC3339NanoTimeEncoder),
 			EncodeDuration: zapcore.StringDurationEncoder,
 			EncodeCaller:   zapcore.ShortCallerEncoder,
 		})
@@ -304,4 +304,14 @@ func NewLogger(opts ...Option) (*Logger, error) {
 	logger.writer = writer
 	logger.core = zapcore.NewCore(enc, writer, level)
 	return logger, nil
+}
+
+func getTimeEncoder(o *options, defaultEncoder func(t time.Time, enc zapcore.PrimitiveArrayEncoder)) func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+	var timeEncoder func(t time.Time, enc zapcore.PrimitiveArrayEncoder)
+	if o.timeEncoder == nil {
+		timeEncoder = defaultEncoder
+	} else {
+		timeEncoder = o.timeEncoder
+	}
+	return timeEncoder
 }

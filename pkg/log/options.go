@@ -15,6 +15,8 @@
 package log
 
 import (
+	"time"
+
 	"go.uber.org/zap/zapcore"
 )
 
@@ -37,6 +39,7 @@ type options struct {
 	logLevel    string
 	context     string
 	skipFrames  int
+	timeEncoder func(t time.Time, enc zapcore.PrimitiveArrayEncoder)
 }
 
 // WithLogLevel sets the log level.
@@ -83,6 +86,19 @@ func WithSkipFrames(sf int) Option {
 	return &funcOption{
 		do: func(o *options) {
 			o.skipFrames = sf
+		},
+	}
+}
+
+// WithTimeEncoder sets the time encoder
+func WithTimeEncoder(layout string) Option {
+	return &funcOption{
+		do: func(o *options) {
+			if layout == "" {
+				o.timeEncoder = nil
+				return
+			}
+			o.timeEncoder = zapcore.TimeEncoderOfLayout(layout)
 		},
 	}
 }

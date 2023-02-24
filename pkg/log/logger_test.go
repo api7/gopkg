@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"reflect"
+	"regexp"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -121,4 +122,20 @@ func TestLogLevel(t *testing.T) {
 
 	p := fws.bytes()
 	assert.Len(t, p, 0, "saw a message which should be dropped")
+}
+
+func TestWithTimeEncoder(t *testing.T) {
+	fws := &fakeWriteSyncer{}
+	logger, err := NewLogger(WithTimeEncoder("2006-01-02 15:04:00.000"), WithWriteSyncer(fws))
+	assert.Nil(t, err, "failed to new logger: ", err)
+	defer logger.Close()
+
+	logger.Warn("this message should be dropped")
+	assert.Nil(t, logger.Sync(), "failed to sync logger")
+
+	p := fws.bytes()
+	fields := unmarshalLogMessage(t, p)
+	reg := regexp.MustCompile(`\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}`)
+	match := reg.MatchString(fields.Time)
+	assert.Equal(t, match, true, "bad log time layout ", fields.Level)
 }
