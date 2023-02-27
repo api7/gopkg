@@ -95,10 +95,10 @@ func WithTimeEncoder(layout string) Option {
 	return &funcOption{
 		do: func(o *options) {
 			if layout == "" {
-				o.timeEncoder = nil
-				return
+				o.timeEncoder = zapcore.RFC3339TimeEncoder
+			} else {
+				o.timeEncoder = zapcore.TimeEncoderOfLayout(layout)
 			}
-			o.timeEncoder = zapcore.TimeEncoderOfLayout(layout)
 		},
 	}
 }
