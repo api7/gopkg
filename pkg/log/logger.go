@@ -229,8 +229,9 @@ func (logger *Logger) Fatalw(message string, fields ...zapcore.Field) {
 // NewLogger sets up a Logger object according to a series of options.
 func NewLogger(opts ...Option) (*Logger, error) {
 	var (
-		writer zapcore.WriteSyncer
-		enc    zapcore.Encoder
+		writer      zapcore.WriteSyncer
+		enc         zapcore.Encoder
+		timeEncoder func(t time.Time, enc zapcore.PrimitiveArrayEncoder)
 	)
 
 	o := &options{
@@ -272,6 +273,12 @@ func NewLogger(opts ...Option) (*Logger, error) {
 		}
 	}
 
+	if o.timeEncoder != nil {
+		timeEncoder = o.timeEncoder
+	} else {
+		timeEncoder = zapcore.RFC3339TimeEncoder
+	}
+
 	if writer == os.Stdout || writer == os.Stderr {
 		enc = zapcore.NewConsoleEncoder(zapcore.EncoderConfig{
 			MessageKey:     "message",
@@ -282,7 +289,7 @@ func NewLogger(opts ...Option) (*Logger, error) {
 			StacktraceKey:  "backtrace",
 			LineEnding:     zapcore.DefaultLineEnding,
 			EncodeLevel:    zapcore.LowercaseColorLevelEncoder,
-			EncodeTime:     zapcore.RFC3339TimeEncoder,
+			EncodeTime:     timeEncoder,
 			EncodeDuration: zapcore.StringDurationEncoder,
 			EncodeCaller:   zapcore.ShortCallerEncoder,
 		})
@@ -296,7 +303,7 @@ func NewLogger(opts ...Option) (*Logger, error) {
 			StacktraceKey:  "backtrace",
 			LineEnding:     zapcore.DefaultLineEnding,
 			EncodeLevel:    zapcore.LowercaseLevelEncoder,
-			EncodeTime:     zapcore.RFC3339NanoTimeEncoder,
+			EncodeTime:     timeEncoder,
 			EncodeDuration: zapcore.StringDurationEncoder,
 			EncodeCaller:   zapcore.ShortCallerEncoder,
 		})
