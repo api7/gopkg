@@ -180,49 +180,55 @@ func (logger *Logger) Errorw(message string, fields ...zapcore.Field) {
 	}
 }
 
-// Panic uses the fmt.Sprint to construct and log a message.
+// Panic uses the fmt.Sprint to construct and log a message and followed by a call to panic().
 func (logger *Logger) Panic(args ...interface{}) {
 	if logger.level <= zapcore.PanicLevel {
 		msg := fmt.Sprint(args...)
 		logger.write(zapcore.PanicLevel, msg, nil)
+		panic(msg)
 	}
 }
 
-// Panicf uses the fmt.Sprintf to log a templated message.
+// Panicf uses the fmt.Sprintf to log a templated message and followed by a call to panic().
 func (logger *Logger) Panicf(template string, args ...interface{}) {
 	if logger.level <= zapcore.PanicLevel {
 		msg := fmt.Sprintf(template, args...)
 		logger.write(zapcore.PanicLevel, msg, nil)
+		panic(msg)
 	}
 }
 
-// Panicw logs a message with some additional context.
+// Panicw logs a message with some additional context and followed by a call to panic().
 func (logger *Logger) Panicw(message string, fields ...zapcore.Field) {
 	if logger.level <= zapcore.PanicLevel {
 		logger.write(zapcore.PanicLevel, message, fields)
+		panic(msg)
 	}
 }
 
-// Fatal uses the fmt.Sprint to construct and log a message.
+// Fatal uses the fmt.Sprint to construct and log a message and followed by a call to os.Exit(1).
 func (logger *Logger) Fatal(args ...interface{}) {
 	if logger.level <= zapcore.FatalLevel {
 		msg := fmt.Sprint(args...)
 		logger.write(zapcore.FatalLevel, msg, nil)
+		os.Exit(1)
 	}
 }
 
-// Fatalf uses the fmt.Sprintf to log a templated message.
+// Fatalf uses the fmt.Sprintf to log a templated message and followed by a call to os.Exit(1).
 func (logger *Logger) Fatalf(template string, args ...interface{}) {
 	if logger.level <= zapcore.FatalLevel {
 		msg := fmt.Sprintf(template, args...)
 		logger.write(zapcore.FatalLevel, msg, nil)
+		os.Exit(1)
 	}
 }
 
-// Fatalw logs a message with some additional context.
+// Fatalw logs a message with some additional context and followed by a call to os.Exit(1).
 func (logger *Logger) Fatalw(message string, fields ...zapcore.Field) {
 	if logger.level <= zapcore.FatalLevel {
 		logger.write(zapcore.FatalLevel, message, fields)
+		os.Exit(1)
 	}
 }
 
