@@ -88,7 +88,7 @@ func TestDefaultLogger(t *testing.T) {
 
 			handlers[0].Call([]reflect.Value{reflect.ValueOf("hello")})
 			if level == "fatal" {
-				assert.Equal(t, true, existed, "failed to exit")
+				assert.Equal(t, true, existed, "os.Exit was not called")
 			}
 
 			assert.Nil(t, logger.Sync(), "failed to sync logger")
