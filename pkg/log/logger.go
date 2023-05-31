@@ -202,7 +202,7 @@ func (logger *Logger) Panicf(template string, args ...interface{}) {
 func (logger *Logger) Panicw(message string, fields ...zapcore.Field) {
 	if logger.level <= zapcore.PanicLevel {
 		logger.write(zapcore.PanicLevel, message, fields)
-		panic(msg)
+		panic(message)
 	}
 }
 

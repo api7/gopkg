@@ -15,9 +15,11 @@
 package log
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
+	sm "github.com/cch123/supermonkey"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -68,7 +70,27 @@ func TestDefaultLogger(t *testing.T) {
 			// Reset default logger
 			DefaultLogger = logger
 
+			defer func() {
+				if level == "panic" {
+					r := recover()
+					assert.Equal(t, r, "hello")
+				}
+			}()
+
+			existed := false
+			if level == "fatal" {
+				fakeExit := func(int) {
+					existed = true
+				}
+				patch := sm.Patch(os.Exit, fakeExit)
+				defer patch.Unpatch()
+			}
+
 			handlers[0].Call([]reflect.Value{reflect.ValueOf("hello")})
+			if level == "fatal" {
+				assert.Equal(t, true, existed, "failed to exit")
+			}
+
 			assert.Nil(t, logger.Sync(), "failed to sync logger")
 
 			fields := unmarshalLogMessage(t, fws.bytes())

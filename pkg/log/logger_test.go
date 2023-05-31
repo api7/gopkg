@@ -18,10 +18,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"os"
 	"reflect"
 	"regexp"
 	"testing"
 
+	sm "github.com/cch123/supermonkey"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/zap"
 )
@@ -74,10 +76,30 @@ func TestLogger(t *testing.T) {
 			assert.Nil(t, err, "failed to new logger: ", err)
 			defer logger.Close()
 
+			defer func() {
+				if level == "panic" {
+					r := recover()
+					assert.Equal(t, r, "hello")
+				}
+			}()
+
+			existed := false
+			if level == "fatal" {
+				fakeExit := func(int) {
+					existed = true
+				}
+				patch := sm.Patch(os.Exit, fakeExit)
+				defer patch.Unpatch()
+			}
+
 			rv := reflect.ValueOf(logger)
 
 			handler := rv.MethodByName(http.CanonicalHeaderKey(level))
 			handler.Call([]reflect.Value{reflect.ValueOf("hello")})
+
+			if level == "fatal" {
+				assert.True(t, existed, "os.Exit was not called")
+			}
 
 			assert.Nil(t, logger.Sync(), "failed to sync logger")
 
