@@ -21,6 +21,7 @@ import (
 	"runtime"
 	"time"
 
+	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -230,6 +231,14 @@ func (logger *Logger) Fatalw(message string, fields ...zapcore.Field) {
 		logger.write(zapcore.FatalLevel, message, fields)
 		os.Exit(1)
 	}
+}
+
+// ZapLogger exports a zap.Logger object with logger's configuration.
+func (logger *Logger) ZapLogger() *zap.Logger {
+	return zap.New(logger.core,
+		zap.AddCallerSkip(logger.skipFrames),
+		zap.ErrorOutput(zapcore.AddSync(logger.writer)),
+	)
 }
 
 // NewLogger sets up a Logger object according to a series of options.
