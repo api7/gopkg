@@ -161,3 +161,22 @@ func TestWithTimeEncoder(t *testing.T) {
 	match := reg.MatchString(fields.Time)
 	assert.Equal(t, match, true, "bad log time layout ", fields.Level)
 }
+
+func TestZapLogger(t *testing.T) {
+	fws := &fakeWriteSyncer{}
+	logger, err := NewLogger(WithLogLevel("error"), WithWriteSyncer(fws))
+	assert.Nil(t, err, "failed to new logger: ", err)
+	defer logger.Close()
+
+	zl := logger.ZapLogger()
+	zl.Warn("this message should be dropped")
+	assert.Nil(t, logger.Sync(), "failed to sync logger")
+
+	p := fws.bytes()
+	assert.Len(t, p, 0, "saw a message which should be dropped")
+
+	zl.Error("this message should be seen")
+
+	p = fws.bytes()
+	assert.Contains(t, string(p), "this message should be seen")
+}
